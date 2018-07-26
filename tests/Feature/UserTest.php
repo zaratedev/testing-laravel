@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
 {
@@ -53,5 +51,30 @@ class UserTest extends TestCase
         $response->assertRedirect("/profiles/". $user->id);
 
         $this->assertEquals($user->fresh()->name, "Jonathan");
+    }
+
+    /** @test */
+    public function it_authenticated_user_can_delete_his_profile()
+    {
+        $user = create('App\User');
+        $this->signIn($user);
+
+        $this->post("/profiles/delete/{$user->id}")->assertRedirect('/');
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
+
+    /** @test */
+    public function unauthorized_users_cannot_delete_a_profile()
+    {
+        $this->withExceptionHandling();
+
+        $user = create('App\User');
+
+        $this->post("/profiles/delete/{$user->id}")
+            ->assertRedirect('login');
+
+        $this->signIn()->post("/profiles/delete/{$user->id}")
+            ->assertStatus(403); // Unauthorized action
     }
 }

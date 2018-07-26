@@ -24,11 +24,28 @@ class LoginTest extends TestCase
 
         $this->get('/login')->assertSee('Login');
 
-        $response = $this->post('/login', [
+        $credentials = [
             "email" => "user@mail.com",
             "password" => "secret"
-        ]);
+        ];
+
+        $response = $this->post('/login', $credentials);
 
         $response->assertRedirect('/home');
+    }
+
+    /** @test */
+    public function not_authenticate_to_a_user_with_credentials_invalid()
+    {
+        $user = create('App\User', [
+            "email" => "user@mail.com"
+        ]);
+
+        $credentials = [
+            "email" => "users@mail.com",
+            "password" => "secret"
+        ];
+
+        $this->assertInvalidCredentials($credentials);
     }
 }

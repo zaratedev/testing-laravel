@@ -36,6 +36,14 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route("profile", $user);
+    }
 
+    public function delete(User $user)
+    {
+        $this->authorize('update', $user);
+
+        $user->delete();
+
+        return redirect('/');
     }
 }

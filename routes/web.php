@@ -22,3 +22,4 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('profiles/{user}', 'UserController@show')->name('profile');
 Route::get('profiles/{user}/edit', 'UserController@edit')->name('profile.edit')->middleware('auth');
 Route::post('profiles/update/{user}', 'UserController@update')->name('profile.update')->middleware('auth');
+Route::post('profiles/delete/{user}', 'UserController@delete')->name('profile.delete')->middleware('auth');
