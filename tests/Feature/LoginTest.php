@@ -32,6 +32,8 @@ class LoginTest extends TestCase
         $response = $this->post('/login', $credentials);
 
         $response->assertRedirect('/home');
+
+        $this->assertCredentials($credentials);
     }
 
     /** @test */
@@ -47,5 +49,41 @@ class LoginTest extends TestCase
         ];
 
         $this->assertInvalidCredentials($credentials);
+    }
+
+    /** @test */
+    public function the_email_is_required_for_authenticate()
+    {
+        $user = create('App\User');
+
+        $credentials = [
+            "email" => null,
+            "password" => "secret"
+        ];
+
+        $response = $this->from('/login')->post('/login', $credentials);
+
+        $response->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'email' => 'The email field is required.',
+            ]);
+    }
+
+    /** @test */
+    public function the_password_is_required_for_authenticate()
+    {
+        $user = create('App\User', ['email' => 'zaratedev@gmail.com']);
+
+        $credentials = [
+            "email" => "zaratedev@gmail.com",
+            "password" => null
+        ];
+
+        $response = $this->from('/login')->post('/login', $credentials);
+
+        $response->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'password' => 'The password field is required.',
+            ]);
     }
 }

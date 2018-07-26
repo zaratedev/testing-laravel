@@ -15,7 +15,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'last_name', 'email', 'password', 'job',
+        'name', 'last_name', 'email', 'password', 'job', 'confirmation_token'
+    ];
+
+    protected $casts = [
+        'confirmed' => 'boolean'
     ];
 
     /**
@@ -26,4 +30,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function confirm()
+    {
+        $this->confirmed = true;
+        $this->confirmation_token = false;
+        $this->save();
+    }
 }

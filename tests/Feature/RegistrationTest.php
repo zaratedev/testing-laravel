@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ConfirmedYourEmail;
+use App\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -409,6 +413,39 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseMissing('users', [
             "email" => "zaratedev@gmail.com"
         ]);
+    }
+
+    /** @test */
+    public function a_confirmation_email_is_sent_upon_registration()
+    {
+        Mail::fake();
+
+        event(new Registered(create('App\User')));
+
+        Mail::assertSent(ConfirmedYourEmail::class);
+    }
+
+    /** @test */
+    public function user_can_fully_confirm_their_email_address()
+    {
+        $this->from('/register')->post('/register', [
+            'name'                  => 'Jonathan',
+            'last_name'              => 'zarate hernandez',
+            'email'                  => 'zaratedev@gmail.com',
+            'password'               => '123456',
+            'password_confirmation'  => '123456',
+            'job'                    => 'developer',
+        ]);
+
+        $user = User::whereName('Jonathan')->first();
+
+        $this->assertFalse($user->confirmed);
+        $this->assertNotNull($user->confirmation_token);
+
+
+        // Let the user confirmed their account
+        $this->get('/register/confirm?token='. $user->confirmation_token);
+        $this->assertTrue($user->fresh()->confirmed);
     }
 
 }
