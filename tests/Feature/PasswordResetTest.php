@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -22,17 +23,13 @@ class PasswordResetTest extends TestCase
     {
         $user = create('App\User', ["email" => "zaratedev@gmail.com"]);
 
-        $this->from('/password/reset')->post("/password/email", [
-            "email" => "zaratedev@gmail.com"
-        ]);
-
-
-
         $response = $this->post('/password/reset', [
-            "token" => "",
+            "token" => Password::broker()->createToken($user),
             "email" => "zaratedev@gmail.com",
             "password" => "123456",
-            "password" => "123456"
+            "password_confirmation" => "123456"
         ]);
+
+        $response->assertRedirect('/home');
     }
 }
