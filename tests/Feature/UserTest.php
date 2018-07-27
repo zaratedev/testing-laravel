@@ -72,8 +72,15 @@ class UserTest extends TestCase
 
         $response->assertRedirect('/login');
 
-        $this->signIn()->post("/profiles/update/{$user->id}")
-            ->assertStatus(403); // Unauthorized action
+        $this->signIn()->post("/profiles/update/{$user->id}", [
+            '_token' => csrf_token(),
+            'name'                   => 'Jonathan',
+            'last_name'              => 'zarate hernandez',
+            'email'                  => 'zaratedev@gmail.com',
+            'password'               => '',
+            'password_confirmation'  => '',
+            'job'                    => 'developer',
+        ])->assertStatus(403); // Unauthorized action
     }
 
     /** @test */
