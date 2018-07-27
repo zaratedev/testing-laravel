@@ -120,4 +120,41 @@ class LoginTest extends TestCase
                 'password' => 'The password field is required.',
             ]);
     }
+
+    /** @test */
+    public function a_user_can_logout()
+    {
+        $this->signIn(create('App\User'));
+        $response = $this->post('/logout');
+        $response->assertRedirect('/');
+        $this->assertGuest();
+    }
+
+    /** @test */
+    public function as_user_cannot_logout_when_not_authenticated()
+    {
+        $response = $this->post('/logout');
+        $response->assertRedirect('/');
+        $this->assertGuest();
+    }
+
+    /** @test */
+    public function a_user_cannot_make_more_than_five_attempts_in_one_minute()
+    {
+        $user = create('App\User');
+
+        foreach (range(0, 5) as $_) {
+            $response = $this->from('/login')->post('/login', [
+                'email' => $user->email,
+                'password' => '123456',
+            ]);
+        }
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('email');
+
+        $this->assertTrue(session()->hasOldInput('email'));
+        $this->assertFalse(session()->hasOldInput('password'));
+        $this->assertGuest();
+    }
 }
