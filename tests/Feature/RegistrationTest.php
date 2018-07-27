@@ -20,6 +20,16 @@ class RegistrationTest extends TestCase
     }
 
     /** @test */
+    public function cannot_view_registration_form_when_authenticated()
+    {
+        $user = create('App\User');
+        $this->signIn($user);
+        $response = $this->get('/register');
+        $response->assertRedirect('/home');
+    }
+
+
+    /** @test */
     public function user_can_registered_in_the_site_web()
     {
         $response = $this->post('/register', [

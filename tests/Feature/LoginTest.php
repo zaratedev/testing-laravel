@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
@@ -13,6 +14,16 @@ class LoginTest extends TestCase
     {
         $this->get('/login')
             ->assertSee('Login');
+    }
+
+    /** @test */
+    public function a_user_cannot_view_the_login_form_when_authenticated()
+    {
+        $user = create('App\User');
+
+        $this->signIn($user);
+        $response = $this->get('/login');
+        $response->assertRedirect('/home');
     }
 
     /** @test */
@@ -49,6 +60,29 @@ class LoginTest extends TestCase
         ];
 
         $this->assertInvalidCredentials($credentials);
+    }
+
+    /** @test */
+    public function remember_me_credentials_functionality()
+    {
+        $user = create('App\User', [
+            'password' => bcrypt($password = '123456'),
+        ]);
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => $password,
+            'remember' => 'on',
+        ]);
+
+        $response->assertRedirect('/home');
+
+        $response->assertCookie(Auth::guard()->getRecallerName(), vsprintf('%s|%s|%s', [
+            $user->id,
+            $user->getRememberToken(),
+            $user->password,
+        ]));
+
+        $this->assertAuthenticatedAs($user);
     }
 
     /** @test */

@@ -16,6 +16,15 @@ class PasswordEmailTest extends TestCase
             ->assertStatus(200)
             ->assertSee("Reset Password");
     }
+    /** @test */
+    public function a_user_cannot_view_an_email_password_form_when_authenticated()
+    {
+        $user = make('App\User');
+        $this->signIn($user);
+
+        $response = $this->get('/password/reset');
+        $response->assertRedirect('/home');
+    }
 
     /** @test */
     public function a_user_can_reset_password_with_email_address()

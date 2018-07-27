@@ -19,6 +19,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', $user);
+
         $this->validate($request, [
             'name'          => 'required|string',
             'last_name'     => 'required|string',

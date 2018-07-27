@@ -54,6 +54,29 @@ class UserTest extends TestCase
     }
 
     /** @test */
+    public function unauthorized_users_cannot_edit_a_profile()
+    {
+        $this->withExceptionHandling();
+
+        $user = create('App\User');
+
+        $response = $this->post("/profiles/update/". $user->id, [
+            '_token' => csrf_token(),
+            'name'                   => 'Jonathan',
+            'last_name'              => 'zarate hernandez',
+            'email'                  => 'zaratedev@gmail.com',
+            'password'               => '',
+            'password_confirmation'  => '',
+            'job'                    => 'developer',
+        ]);
+
+        $response->assertRedirect('/login');
+
+        $this->signIn()->post("/profiles/update/{$user->id}")
+            ->assertStatus(403); // Unauthorized action
+    }
+
+    /** @test */
     public function it_authenticated_user_can_delete_his_profile()
     {
         $user = create('App\User');
